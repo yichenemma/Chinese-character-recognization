@@ -14,7 +14,7 @@ get_ipython().system('pip install tensorflow ')
 get_ipython().system('pip install keras')
 
 
-# In[4]:
+# In[13]:
 
 
 import numpy as np 
@@ -42,41 +42,48 @@ warnings.filterwarnings('ignore')
 sns.set()
 
 
-# In[7]:
+# In[14]:
 
 
 get_ipython().system('pip install kaggle')
 
 
-# In[16]:
+# In[15]:
 
 
-#!kaggle download -c ch-chdataset
+#read csv file
 dataset = pd.read_csv("A_Z Handwritten Data.csv").astype('float32')
 dataset.rename(columns={'0':'label'}, inplace=True)
 
-# Splite data the X - Our data , and y - the prdict label
+# x vector
 X = dataset.drop('label',axis = 1)
+
+# label
+# labels are number now --> need to convert to letters later
 y = dataset['label']
 
 
-# In[19]:
+# In[16]:
 
 
+# view dataset
 print(dataset)
 
 
-# In[21]:
+# In[17]:
 
 
+# size of X
 print("shape:",X.shape)
+# num features
 print("culoms count:",len(X.iloc[1]))
-print("784 = 28X28")
 
+
+# view first 5 rows
 X.head()
 
 
-# In[22]:
+# In[18]:
 
 
 from sklearn.utils import shuffle
@@ -93,12 +100,12 @@ for i in range(16):
 plt.show()
 
 
-# In[23]:
+# In[19]:
 
 
 print("Amount of each labels")
 
-# Change label to alphabets
+# Change label to letters
 alphabets_mapper = {0:'A',1:'B',2:'C',3:'D',4:'E',5:'F',6:'G',7:'H',8:'I',9:'J',10:'K',11:'L',12:'M',13:'N',14:'O',15:'P',16:'Q',17:'R',18:'S',19:'T',20:'U',21:'V',22:'W',23:'X',24:'Y',25:'Z'} 
 dataset_alphabets = dataset.copy()
 dataset['label'] = dataset['label'].map(alphabets_mapper)
@@ -107,12 +114,12 @@ label_size = dataset.groupby('label').size()
 label_size.plot.barh(figsize=(10,10))
 plt.show()
 
-print("We have very low observations for I and F ")
-print("I count:", label_size['I'])
-print("F count:", label_size['F'])
+#print("We have very low observations for I and F ")
+#print("I count:", label_size['I'])
+#print("F count:", label_size['F'])
 
 
-# In[24]:
+# In[20]:
 
 
 # splite the data
@@ -126,7 +133,7 @@ X_train = standard_scaler.transform(X_train)
 X_test = standard_scaler.transform(X_test)
 
 
-# In[25]:
+# In[21]:
 
 
 print("Data after scaler")
@@ -140,7 +147,7 @@ for i in range(16):
 plt.show()
 
 
-# In[26]:
+# In[22]:
 
 
 X_train = X_train.reshape(X_train.shape[0], 28, 28, 1).astype('float32')
@@ -150,7 +157,7 @@ y_train = np_utils.to_categorical(y_train)
 y_test = np_utils.to_categorical(y_test)
 
 
-# In[27]:
+# In[23]:
 
 
 # build the CNN
@@ -169,7 +176,7 @@ scores = cls.evaluate(X_test,y_test, verbose=0)
 print("CNN Score:",scores[1])
 
 
-# In[28]:
+# In[24]:
 
 
 plt.plot(history.history['loss'])
@@ -181,10 +188,11 @@ plt.legend(['Train', 'Test'], loc='upper left')
 plt.show()
 
 
-# In[29]:
+# In[32]:
 
 
 cm=confusion_matrix(y_test.argmax(axis=1),cls.predict(X_test).argmax(axis=1))
+#print(cm)
 df_cm = pd.DataFrame(cm, range(26),
                   range(26))
 plt.figure(figsize = (20,15))
@@ -192,7 +200,7 @@ sns.set(font_scale=1.4)#for label size
 sns.heatmap(df_cm, annot=True,annot_kws={"size": 16})# font size
 
 
-# In[31]:
+# In[26]:
 
 
 get_ipython().system('pip install --upgrade pip')
@@ -200,37 +208,51 @@ get_ipython().system('pip install -U coremltools')
 import coremltools
 
 
-# In[37]:
+# In[27]:
 
 
 get_ipython().system('pip install tensorflowjs ')
-cls.save('my_model.h5')
 
 
-# In[39]:
+# In[28]:
 
 
 get_ipython().system('mkdir model')
 get_ipython().system('tensorflowjs_converter --input_format keras my_model.h5 model/')
 
 
-# In[40]:
+# In[29]:
+
+
+cls.save('my_model.h5')
+
+
+# In[30]:
 
 
 get_ipython().system('zip -r model.zip model ')
 
 
-# In[35]:
+# In[33]:
 
 
 
 output_labels = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-core_ml=coremltools.converters.keras.convert('my_model.h5', input_names=['image'], 
-                                             output_names=['output'], 
-                                             class_labels=output_labels,
-                                             image_scale=1/255.0, is_bgr = False, 
-                                             image_input_names = "image")
-core_ml.save('coreml_model.mlmodel')
+#core_ml=coremltools.converters.keras.convert('my_model.h5', input_names=['image'], 
+                                             #output_names=['output'], 
+                                             #class_labels=output_labels,
+                                             #image_scale=1/255.0, is_bgr = False, 
+                                             #image_input_names = "image")
+#core_ml.save('coreml_model.mlmodel')
+
+cls.save('/Users/yichenwu/Desktop/model')
+
+
+# In[34]:
+
+
+cls.save_weights('/Users/yichenwu/Desktop/model')
+cls.load_weights('/Users/yichenwu/Desktop/model')
 
 
 # In[ ]:
